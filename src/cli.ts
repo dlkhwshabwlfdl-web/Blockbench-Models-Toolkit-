@@ -127,6 +127,10 @@ async function commandBuild(args: ParsedArgs): Promise<number> {
   }
 
   const report = validate(model);
+  // Warnings carry the real feedback — a dropped animation, a seam left shared, a clip
+  // keyed to a bone that was renamed. Printing them only on failure means a build that
+  // silently lost half its work reports success, so they always go out.
+  for (const warning of report.warnings) console.log(`! ${warning}`);
   if (!report.ok) {
     console.error(formatReport(report));
     throw new Error(`spec failed validation with ${report.errors.length} error(s)`);

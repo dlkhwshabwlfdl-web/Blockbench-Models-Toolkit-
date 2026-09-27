@@ -6,9 +6,9 @@ import { hexToRgb, type Vec3 } from './util/math.js';
 import { clip, pose as poseKeys, type PoseEntry } from './anim/clip.js';
 import {
   breathe,
-  defaultMotionRig,
   headTurn,
   idleSway,
+  inferMotionRig,
   locomotion,
   tailWave,
   type MotionRig,
@@ -190,8 +190,12 @@ export function resolveSpec(spec: JsonSpec): ResolvedSpec {
   model.addTexture(atlas.toTexture(`${spec.name}_skin`, { useAsDefault: true }));
 
   // --- animations ---
-  const rig: MotionRig = { ...defaultMotionRig(), ...(spec.motionRig ?? {}) };
+  // The generators drive named bones. A spec should not have to learn this toolkit's
+  // private naming, so read the rig off the bones it declared and let an explicit
+  // `motionRig` override only the parts the spec cares about.
+  const rig: MotionRig = { ...inferMotionRig(spec.bones), ...(spec.motionRig ?? {}) };
   for (const animation of spec.animations ?? []) {
+    const before = model.clips.length;
     switch (animation.kind) {
       case 'locomotion':
         model.addClip(clip({ name: animation.name, keys: locomotion({ rig, ...strip(animation) }), length: animation.length }));
@@ -220,6 +224,13 @@ export function resolveSpec(spec: JsonSpec): ResolvedSpec {
         break;
       default:
         warnings.push(`spec: unknown animation kind "${(animation as { kind: string }).kind}"`);
+    }
+    if (animation.kind !== 'poses' && model.clips.length === before) {
+      warnings.push(
+        `spec: animation "${animation.name}" (${animation.kind}) produced no keyframes — it drives ` +
+          `bones this spec does not declare. Name bones after the rig (head, neck_01, tail_01, ` +
+          `left_leg/right_leg, front_leg_left, …) or set "motionRig" explicitly.`,
+      );
     }
   }
 
