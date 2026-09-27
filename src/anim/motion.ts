@@ -39,6 +39,150 @@ export function defaultMotionRig(tailLength = 7): MotionRig {
   };
 }
 
+/* ------------------------------------------------------------ inference -- */
+
+/** A bone as declared in a spec — just enough to work out what drives what. */
+export interface BoneHint {
+  name: string;
+  parent?: string | null;
+}
+
+const SIDE_TOKENS = new Map<string, number>([
+  ['left', 0],
+  ['l', 0],
+  ['right', 1],
+  ['r', 1],
+]);
+
+const ROLE_WORDS = new Set([
+  'toe', 'toes', 'foot', 'feet', 'shin', 'knee', 'leg', 'legs', 'thigh',
+  'lower', 'fore', 'arm', 'arms', 'claw', 'claws', 'hand', 'hands', 'palm',
+  'elbow', 'wrist', 'shoulder',
+]);
+
+const TORSO_BONES = ['body', 'chest', 'spine', 'hips', 'torso', 'core'];
+
+type LimbRole = 'leg' | 'shin' | 'foot' | 'toes' | 'arm' | 'lower';
+
+function tokenize(name: string): string[] {
+  return name
+    .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+    .split(/[^a-zA-Z0-9]+/)
+    .filter(Boolean)
+    .map((token) => token.toLowerCase());
+}
+
+function limbRole(tokens: string[]): LimbRole | null {
+  const has = (...words: string[]): boolean => words.some((word) => tokens.includes(word));
+  const lowered = has('lower', 'fore');
+  if (has('toe', 'toes')) return 'toes';
+  if (has('foot', 'feet')) return 'foot';
+  if (has('shin', 'knee')) return 'shin';
+  if (has('leg', 'thigh')) return lowered ? 'shin' : 'leg';
+  if (has('claw', 'claws', 'hand', 'hands', 'palm', 'elbow', 'wrist')) return 'lower';
+  if (has('arm', 'arms', 'shoulder')) return lowered ? 'lower' : 'arm';
+  return null;
+}
+
+/** `front_leg_left` groups its parts under `front`; `left_leg` has no group. */
+function limbGroup(tokens: string[]): string {
+  return tokens.find((t) => !SIDE_TOKENS.has(t) && !ROLE_WORDS.has(t) && !/^\d+$/.test(t)) ?? '';
+}
+
+/** Collect `neck_01, neck_02, …` / `tail_01, tail_02, …`, ordered along the chain. */
+function chainFrom(names: string[], prefix: string): string[] {
+  const pattern = new RegExp(`^${prefix}(?:[-_]?(\\d+))?$`, 'i');
+  const found: Array<{ name: string; order: number | null; index: number }> = [];
+  names.forEach((name, index) => {
+    const match = pattern.exec(name);
+    if (match) found.push({ name, order: match[1] === undefined ? null : Number(match[1]), index });
+  });
+  if (!found.some((entry) => entry.order !== null)) return found.map((entry) => entry.name);
+  return found
+    .sort((a, b) => (a.order ?? a.index) - (b.order ?? b.index))
+    .map((entry) => entry.name);
+}
+
+/**
+ * Work out a motion rig from the bones a spec actually declares.
+ *
+ * `defaultMotionRig()` names one specific biped — `body`, `chest`, `head`, `neck_01`,
+ * `left_leg`, `tail_01` — so any model that names its bones differently gets *zero*
+ * keyframes from every generator, silently. This reads the declared names instead, and
+ * accepts both the side-first (`left_shin`) and side-last (`front_shin_left`) orders the
+ * examples use, so a spec only has to pick sensible names. Anything it cannot read is
+ * left out, and the generators skip bones the model lacks.
+ *
+ * Limb phases alternate by group *and* side, so a four-legged rig comes out on a
+ * diagonal gait rather than a bound one.
+ */
+export function inferMotionRig(bones: BoneHint[]): MotionRig {
+  const names = bones.map((bone) => bone.name);
+  const rig: MotionRig = {};
+
+  // `body` and `chest` are separate drives: locomotion bobs the body, breathe scales the
+  // chest. A rig may declare either, both, or neither.
+  const body = names.includes('body') ? 'body' : TORSO_BONES.find((name) => names.includes(name));
+  if (body) rig.body = body;
+  const chest = names.includes('chest') ? 'chest' : TORSO_BONES.find((name) => names.includes(name));
+  if (chest) rig.chest = chest;
+
+  const neck = chainFrom(names, 'neck');
+  if (neck.length) rig.neck = neck;
+  const tail = chainFrom(names, 'tail');
+  if (tail.length) rig.tail = tail;
+
+  if (names.includes('head')) rig.head = 'head';
+  else if (neck.length) rig.head = neck[neck.length - 1];
+
+  // Limb parts, grouped the way they were declared.
+  type Partial = { leg?: string; shin?: string; foot?: string; toes?: string; arm?: string; lower?: string };
+  const limbs = new Map<string, Partial>();
+  const groupOrder: string[] = [];
+  const firstSeen = new Map<string, number>();
+
+  names.forEach((name, index) => {
+    const tokens = tokenize(name);
+    const side = tokens.map((token) => SIDE_TOKENS.get(token)).find((value) => value !== undefined);
+    const role = limbRole(tokens);
+    if (side === undefined || role === null) return;
+    const group = limbGroup(tokens);
+    const key = `${group}|${side}`;
+    const slot = limbs.get(key) ?? {};
+    // A limb is declared proximal-to-distal, so the first bone claiming a role is the one
+    // attached to the body: `left_lower_arm` wins over the `left_claws` below it.
+    if (slot[role] === undefined) slot[role] = name;
+    limbs.set(key, slot);
+    if (!groupOrder.includes(group)) groupOrder.push(group);
+    if (!firstSeen.has(key)) firstSeen.set(key, index);
+  });
+
+  const legs: NonNullable<MotionRig['legs']> = [];
+  const arms: NonNullable<MotionRig['arms']> = [];
+  for (const [key, slot] of [...limbs].sort((a, b) => firstSeen.get(a[0])! - firstSeen.get(b[0])!)) {
+    const [group, sideText] = key.split('|');
+    const side = Number(sideText);
+    const groupIndex = Math.max(0, groupOrder.indexOf(group));
+    const phase = ((groupIndex + side) % 2) * 0.5;
+    if (slot.leg) {
+      legs.push({
+        leg: slot.leg,
+        ...(slot.shin ? { shin: slot.shin } : {}),
+        ...(slot.foot ? { foot: slot.foot } : {}),
+        ...(slot.toes ? { toes: slot.toes } : {}),
+        phase,
+      });
+    }
+    if (slot.arm) {
+      arms.push({ arm: slot.arm, ...(slot.lower ? { lower: slot.lower } : {}), phase });
+    }
+  }
+  if (legs.length) rig.legs = legs;
+  if (arms.length) rig.arms = arms;
+
+  return rig;
+}
+
 export interface LocomotionOptions {
   rig: MotionRig;
   length: number;

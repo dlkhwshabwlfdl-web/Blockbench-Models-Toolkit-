@@ -40,6 +40,40 @@ node dist/cli.js build examples/crate.json --out out/crate --bbmodel --preview -
 | `animations` | `AnimationSpec[]` | optional |
 | `motionRig` | `Partial<MotionRig>` | override the bone names the generators drive |
 
+### Bone naming
+
+The motion generators drive bones **by name**, so a spec has to name its bones after the rig
+for `locomotion`, `tailWave`, `breathe`, `headTurn` and `idleSway` to produce anything. That
+naming is read off the `bones` array automatically — you do not have to declare it:
+
+| Rig field | Read from | Example |
+|-----------|-----------|---------|
+| `body` | `body`, else `chest` / `spine` / `hips` / `torso` / `core` | `body` |
+| `chest` | `chest`, else `spine` / `hips` / … | `chest` |
+| `neck` | a `neck_01`, `neck_02`, … chain, ordered by index | `neck_01`, `neck_02` |
+| `head` | `head`, else the last neck bone | `head` |
+| `tail` | a `tail_01`, `tail_02`, … chain, ordered by index | `tail_01`, `tail_02` |
+| `legs` / `arms` | `<side>_<part>` or `<group>_<part>_<side>` | `left_shin`, `front_leg_left` |
+
+`<side>` is `left`/`right` (or `l`/`r`), and `<part>` is `leg`/`shin`/`foot`/`toes` or
+`arm`/`lower` (`shin`, `knee`, `forearm`, `hand` and `claw` are also read). Both orders work,
+so `left_leg`, `front_leg_left` and `wing_left_01`-style names all resolve; bones that belong
+to no limb — `jaw`, `eyes`, `horn_left_01` — are simply left alone. Limb phases alternate by
+group *and* side, which puts a four-legged rig on a diagonal gait rather than a bound one.
+
+When a limb declares the same part twice (`left_arm`, `left_lower_arm`, `left_claws`) the
+proximal bone wins, because a limb is declared proximal-to-distal.
+
+`motionRig` still wins where it is given, so a model with unusual bones — a lantern whose
+flame should breathe — can say so directly:
+
+```json
+"motionRig": { "chest": "flame" }
+```
+
+If a generator finds nothing to drive it emits no keyframes. That is reported as a warning
+naming the animation, never as a silent success.
+
 ### `MaterialSpec`
 
 | Field | Default | Meaning |
@@ -161,6 +195,10 @@ Building it produces 93/100 (S): palette 6, colours/face exactly 3, uv use 100%,
 - duplicate bone names (skipped)
 - more than one root bone
 - an unrecognised animation `kind`
+- a motion generator that produced no keyframes, because the spec declares none of the bones
+  it drives
+
+The CLI prints these on a **successful** build too, not just on failure.
 
 ## When to use the JSON spec vs a script
 

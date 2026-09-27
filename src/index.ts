@@ -186,6 +186,8 @@ export {
   headTurn,
   idleSway,
   defaultMotionRig,
+  inferMotionRig,
+  type BoneHint,
   type MotionRig,
   type LocomotionOptions,
   type TailWaveOptions,
