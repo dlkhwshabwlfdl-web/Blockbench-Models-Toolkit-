@@ -1,0 +1,7 @@
+icedragon:
+  displayname: icedragon
+  material: PAPER
+  pack:
+    generate_model: false
+    model: icedragon
+    texture: 'oraxen:item/icedragon'
