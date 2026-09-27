@@ -2,6 +2,7 @@
   "name": "@trex/aimodel",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "description": "Standalone model/texture/UV/animation toolkit: write Minecraft models as scripts, no Blockbench required",
   "type": "module",
   "engines": {
