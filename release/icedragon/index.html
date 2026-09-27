@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ice Dragon — download</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 40px 24px 80px;
+    background: radial-gradient(1200px 600px at 50% -10%, #14313b 0%, #0d1015 60%);
+    color: #dfe7ec; font: 15px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  main { max-width: 940px; margin: 0 auto; }
+  h1 { font-size: 30px; margin: 0 0 4px; letter-spacing: -0.02em; }
+  .sub { color: #8fa3ad; margin: 0 0 6px; font-size: 17px; }
+  .meta { color: #6d818b; font-size: 13px; margin: 0 0 32px; }
+  .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin: 0 3px -1px 0; }
+  .big {
+    display: block; text-decoration: none; text-align: center;
+    background: linear-gradient(180deg, #ff5cab, #e0348c); color: #fff;
+    font-weight: 600; font-size: 17px; padding: 17px 24px; border-radius: 12px;
+    box-shadow: 0 10px 30px -10px rgba(255,60,150,.6);
+  }
+  .big:hover { filter: brightness(1.08); }
+  .big small { display: block; font-weight: 400; opacity: .85; font-size: 13px; margin-top: 3px; }
+  h2 { font-size: 15px; text-transform: uppercase; letter-spacing: .09em; color: #6d818b; margin: 40px 0 14px; font-weight: 600; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; }
+  a.file {
+    display: block; text-decoration: none; color: #dfe7ec;
+    background: #161b21; border: 1px solid #232b33; border-radius: 9px; padding: 13px 15px;
+  }
+  a.file:hover { border-color: #3d4d58; background: #1b2128; }
+  a.file b { display: block; font-size: 14px; font-weight: 600; }
+  a.file span { color: #7d909b; font-size: 12.5px; }
+  figure { margin: 0 0 14px; background: #12161b; border: 1px solid #222a31; border-radius: 10px; overflow: hidden; }
+  figure img { display: block; width: 100%; height: auto; }
+  figcaption { padding: 10px 14px; color: #7d909b; font-size: 12.5px; border-top: 1px solid #222a31; }
+  code { background: #1b2128; padding: 1px 6px; border-radius: 4px; font-size: 13px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Ice Dragon</h1>
+  <p class="sub">
+    Cold glacial teal hide around a burning interior.
+    <span class="swatch" style="background:#1d5c6e"></span><span class="swatch" style="background:#2e8a9e"></span><span class="swatch" style="background:#7fd4dd"></span><span class="swatch" style="background:#ff429e"></span>
+  </p>
+  <p class="meta">172 cubes &middot; 48 bones &middot; 23 animations &middot; 3,320 keyframes &middot; 64&times;64 texture &middot; quality 92/100</p>
+
+  <a class="big" href="icedragon.zip" download>
+    Download the whole package (518 KB)
+    <small>bbmodel + texture + previews + Java, Oraxen and ItemsAdder packs</small>
+  </a>
+
+  <h2>Model</h2>
+  <div class="grid">
+    <a class="file" href="model/icedragon.bbmodel" download><b>icedragon.bbmodel</b><span>1.6 MB &middot; open in Blockbench</span></a>
+    <a class="file" href="model/icedragon.mjs" download><b>icedragon.mjs</b><span>the build script &middot; edit and re-run</span></a>
+    <a class="file" href="manifest.json" download><b>manifest.json</b><span>every clip, the QA metrics, the uv and seam report</span></a>
+  </div>
+
+  <h2>Texture</h2>
+  <div class="grid">
+    <a class="file" href="texture/icedragon.png" download><b>icedragon.png</b><span>64&times;64 atlas, the real texture</span></a>
+    <a class="file" href="texture/icedragon_atlas_8x.png" download><b>atlas 8&times;</b><span>scaled up so you can see it</span></a>
+  </div>
+
+  <h2>Previews</h2>
+  <figure>
+    <img src="preview/icedragon_views.png" alt="Orthographic views: front, back, left, right, top, bottom, iso">
+    <figcaption>Every orthographic view. Click for full size.</figcaption>
+  </figure>
+  <figure>
+    <img src="preview/icedragon_poses.png" alt="Animation poses: roar, frost breath, wing unfurl, flap, bite, takeoff, run, sleep">
+    <figcaption>Posed through the real skeleton &mdash; roar, frost_breath, wing_unfurl, flap, bite, takeoff, run, sleep. <a style="color:#7fd4dd" href="preview/icedragon_poses.png">Full size &rarr;</a></figcaption>
+  </figure>
+
+  <h2>Resource packs</h2>
+  <div class="grid">
+    <a class="file" href="packs/java/icedragon.json" download><b>Java model</b><span>block/item JSON + mcmeta</span></a>
+    <a class="file" href="packs/oraxen/items/icedragon.yml" download><b>Oraxen</b><span>pack fragment + config</span></a>
+    <a class="file" href="packs/itemsadder/data/items_packs/trex/configs/icedragon.yml" download><b>ItemsAdder</b><span>pack fragment + config</span></a>
+  </div>
+
+  <h2>Rebuild it yourself</h2>
+  <p style="color:#8fa3ad">
+    <code>npm install &amp;&amp; npm run build</code><br>
+    <code>node examples/icedragon/icedragon.mjs --out out/icedragon</code><br>
+    <code>node examples/icedragon/package.mjs out/icedragon</code>
+  </p>
+</main>
+</body>
+</html>
