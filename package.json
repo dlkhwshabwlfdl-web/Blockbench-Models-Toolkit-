@@ -1,0 +1,51 @@
+{
+  "name": "@trex/aimodel",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Standalone model/texture/UV/animation toolkit: write Minecraft models as scripts, no Blockbench required",
+  "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./export": {
+      "types": "./dist/export/index.d.ts",
+      "import": "./dist/export/index.js"
+    },
+    "./render": {
+      "types": "./dist/render/index.d.ts",
+      "import": "./dist/render/index.js"
+    }
+  },
+  "bin": {
+    "aimodel": "./dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "cli": "node dist/cli.js",
+    "smoke": "npm run build && node scripts/smoke.mjs",
+    "install-skills": "node scripts/install-skills.mjs",
+    "verify": "npm run typecheck && npm run test && npm run build"
+  },
+  "dependencies": {
+    "pngjs": "^7.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/pngjs": "^6.0.5",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "name": "crate",
+  "resolution": [32, 32],
+  "identifier": "geometry.crate",
+  "palette": {
+    "wood": "#8a5a2b",
+    "metal": "#9aa4ad"
+  },
+  "materials": {
+    "wood": { "palette": "wood", "steps": 3, "contrast": 0.36, "axis": "vertical" },
+    "metal": { "palette": "metal", "steps": 3, "contrast": 0.42, "axis": "horizontal", "size": 8 }
+  },
+  "bones": [
+    { "name": "root", "pivot": [0, 0, 0] },
+    { "name": "lid", "pivot": [0, 16, -8], "parent": "root" }
+  ],
+  "cubes": [
+    { "name": "floor", "from": [-8, 0, -8], "to": [8, 1, 8], "bone": "root", "material": "wood" },
+    { "name": "wall_north", "from": [-8, 1, -8], "to": [8, 16, -6], "bone": "root", "material": "wood" },
+    { "name": "wall_south", "from": [-8, 1, 6], "to": [8, 16, 8], "bone": "root", "material": "wood" },
+    { "name": "wall_east", "from": [6, 1, -6], "to": [8, 16, 6], "bone": "root", "material": "wood" },
+    { "name": "wall_west", "from": [-8, 1, -6], "to": [-6, 16, 6], "bone": "root", "material": "wood" },
+    { "name": "band_east", "from": [6, 3, -9], "to": [8.4, 13, 9], "bone": "root", "material": "metal" },
+    { "name": "band_west", "from": [-8.4, 3, -9], "to": [-6, 13, 9], "bone": "root", "material": "metal" },
+    { "name": "lid_plate", "from": [-8.5, 16, -8.5], "to": [8.5, 18, 8.5], "bone": "lid", "material": "wood" },
+    { "name": "lid_band_east", "from": [6, 18, -8.5], "to": [8.5, 18.8, 8.5], "bone": "lid", "material": "metal" },
+    { "name": "lid_band_west", "from": [-8.5, 18, -8.5], "to": [-6, 18.8, 8.5], "bone": "lid", "material": "metal" },
+    { "name": "lid_latch", "from": [-1.5, 15, 8], "to": [1.5, 17.5, 9], "bone": "lid", "material": "metal" }
+  ],
+  "animations": [
+    {
+      "kind": "poses",
+      "name": "open",
+      "length": 0.6,
+      "loop": "once",
+      "poses": [
+        { "time": 0, "rotations": { "lid": [0, 0, 0] }, "interpolation": "linear" },
+        { "time": 0.18, "rotations": { "lid": [18, 0, 0] } },
+        { "time": 0.6, "rotations": { "lid": [-96, 0, 0] } }
+      ]
+    },
+    {
+      "kind": "poses",
+      "name": "close",
+      "length": 0.45,
+      "loop": "once",
+      "poses": [
+        { "time": 0, "rotations": { "lid": [-96, 0, 0] } },
+        { "time": 0.45, "rotations": { "lid": [0, 0, 0] }, "interpolation": "linear" }
+      ]
+    },
+    {
+      "kind": "poses",
+      "name": "rattling",
+      "length": 1.2,
+      "loop": "loop",
+      "poses": [
+        { "time": 0, "rotations": { "lid": [0, 0, 0] }, "positions": { "root": [0, 0, 0] } },
+        { "time": 0.15, "rotations": { "lid": [3.5, 0, 0] }, "positions": { "root": [0, 0.3, 0] } },
+        { "time": 0.3, "rotations": { "lid": [0, 0, 0] }, "positions": { "root": [0, 0, 0] } },
+        { "time": 0.5, "rotations": { "lid": [-2.5, 0, 0] }, "positions": { "root": [0, -0.2, 0] } },
+        { "time": 0.7, "rotations": { "lid": [3, 0, 0] }, "positions": { "root": [0.25, 0.2, 0] } },
+        { "time": 1.2, "rotations": { "lid": [0, 0, 0] }, "positions": { "root": [0, 0, 0] } }
+      ]
+    }
+  ]
+}
